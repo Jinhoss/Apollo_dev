@@ -9,22 +9,22 @@ import torch
 class ApolloDataset(Dataset):
     def __init__(self, file_path, args):
         super(ApolloDataset, self).__init__()
-        self.df = pd.read_csv('file_path')
+        self.df = pd.read_csv(file_path)
         self.tokenizer=  AutoTokenizer.from_pretrained(args.model_path, do_lower_case=False)
-        self.df['document'] = self.df['document'].apply(self.cleansing)
+        self.df['contents'] = self.df['contents'].apply(self.cleansing)
         self.args = args
         if args.mode=='train':
             self.df = self.dataAugmentation(self.df, self.tokenizer)
 
     def dataAugmentation(self, sen_df, tokenizer):
-        positive = sen_df[sen_df['document']==0]
+        positive = sen_df[sen_df['label']==0]
         positive = positive.sample(frac=1).reset_index(drop=True)
         l = len(sen_df)
         new_sen = []
         for i in range(l//2):
             idx = i*2
-            sen1 = positive['document']
-            sen2 = positive['document']
+            sen1 = positive['contents'][idx]
+            sen2 = positive['contents'][idx+1]
             sen1 = tokenizer.tokenize(sen1)
             sen2 = tokenizer.tokenize(sen2)
             min_len = min(len(sen1), len(sen2))
@@ -41,7 +41,7 @@ class ApolloDataset(Dataset):
             new_sen.append(new1)
             new_sen.append(new2)
         new_label = [1] * len(new_sen)
-        insert_df = pd.DataFrame({'documuent':new_sen, 'label':new_label})
+        insert_df = pd.DataFrame({'contents':new_sen, 'label':new_label})
         sen_df.append(insert_df, ignore_index=True)
         return sen_df
     
@@ -52,10 +52,10 @@ class ApolloDataset(Dataset):
 
     def __getitem__(self, idx):
         if self.args.mode=='train':
-            sen, label = self.df['document'][idx], self.df['label'][idx]
+            sen, label = self.df['contents'][idx], self.df['label'][idx]
             label = torch.LongTensor(label)
         else:
-            sen = self.df['document'][idx]
+            sen = self.df['contents'][idx]
 
         output = self.tokenizer.encode_plus(sen, max_length=self.args.maxlen)
         input_ids, attention_mask = output['input_ids'], output['attention_mask']

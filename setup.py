@@ -8,8 +8,6 @@ setup(
     install_requires=[
         'protobuf==3.10.0',
         'matplotlib==3.1.1',
-        'tensorflow==2.6.0',
-        'keras==2.6.0',
         'pandas==0.23.4',
         'scikit-learn==0.22',
         'transformers==4.15.0'
