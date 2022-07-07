@@ -13,36 +13,17 @@ import os
 from transformers import BertTokenizer, BertForSequenceClassification, AdamW, BertConfig
 from dataset import ApolloDataset
 from model import ApolloModel
+import random
 
 
-# def generate_data_loader(file_path, tokenizer, args):
-#     def get_input_ids(data):
-#         document_bert = ["[CLS] " + str(s) + " [SEP]" for s in data]
-#         tokenized_texts = [tokenizer.tokenize(s) for s in document_bert]
-#         input_ids = [tokenizer.convert_tokens_to_ids(x) for x in tokenized_texts]
-#         input_ids = pad_sequences(input_ids, maxlen=args.maxlen, dtype='long', truncating='post', padding='post')
-#         return input_ids
-
-#     def get_attention_masks(input_ids):
-#         attention_masks = []
-#         for seq in input_ids:
-#             seq_mask = [float(i > 0) for i in seq]
-#             attention_masks.append(seq_mask)
-#         return attention_masks
-
-#     def get_data_loader(inputs, masks, labels, batch_size=args.batch):
-#         data = TensorDataset(torch.tensor(inputs), torch.tensor(masks), torch.tensor(labels))
-#         sampler = RandomSampler(data) if args.mode == 'train' else SequentialSampler(data)
-#         data_loader = DataLoader(data, sampler=sampler, batch_size=batch_size)
-#         return data_loader
-
-#     data_df = pd.read_csv(file_path)
-#     input_ids = get_input_ids(data_df['contents'].values)
-#     attention_masks = get_attention_masks(input_ids)
-#     data_loader = get_data_loader(input_ids, attention_masks, data_df['label'].values)
-
-#     return data_loader
-
+random_seed = 42
+torch.manual_seed(random_seed)
+np.random.seed(random_seed)
+torch.cuda.manual_seed(random_seed)
+torch.cuda.manual_seed_all(random_seed)
+random.seed(random_seed)
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
 
 def bind_nsml(model, args=None):
     def save(dir_name, **kwargs):
@@ -59,8 +40,7 @@ def bind_nsml(model, args=None):
         # tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased', do_lower_case=False)
         # test_dataloader = generate_data_loader(file_path, tokenizer, args)
         test_dataset = ApolloDataset(file_path, args)
-        test_sampler = SequentialSampler(test_dataset)
-        test_dataLoader = DataLoader(test_dataset, sampler=test_sampler)
+        test_dataLoader = DataLoader(test_dataset)
         results, _ = predict(model, args, test_dataLoader)
         return results
 
@@ -74,7 +54,7 @@ if __name__ == '__main__':
     parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument("--mode", type=str, default="train")
     parser.add_argument("--batch", type=int, default=16)
-    parser.add_argument("--maxlen", type=int, default=128)
+    parser.add_argument("--maxlen", type=int, default=256)
     parser.add_argument("--lr", type=float, default=2e-5)
     parser.add_argument("--eps", type=float, default=1e-8)
     parser.add_argument("--epochs", type=int, default=4)
@@ -104,11 +84,11 @@ if __name__ == '__main__':
         data_df = pd.read_csv(args.train_path)
         train_dataset = ApolloDataset(args.train_path, args)
         valid_dataset = ApolloDataset(args.valid_path, args)
-        print('dataset complete')
-        train_sampler = RandomSampler(train_dataset)
-        valid_sampler = RandomSampler(valid_dataset)
-        train_dataLoader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch)
-        valid_dataLoader = DataLoader(valid_dataset, sampler=valid_sampler, batch_size=args.batch)
+        print('dataset complete', len(train_dataset))
+        # train_sampler = RandomSampler(train_dataset)
+        # valid_sampler = RandomSampler(valid_dataset)
+        train_dataLoader = DataLoader(train_dataset, batch_size=args.batch, shuffle=True)
+        valid_dataLoader = DataLoader(valid_dataset, batch_size=args.batch, shuffle=True)
         print('dataloader complete')
         # tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased', do_lower_case=False)
         # train_dataloader = generate_data_loader(args.train_path, tokenizer, args)

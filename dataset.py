@@ -18,13 +18,15 @@ class ApolloDataset(Dataset):
 
     def dataAugmentation(self, sen_df, tokenizer):
         positive = sen_df[sen_df['label']==0]
+        negative = sen_df[sen_df['label']==1]
+        negative.reset_index(drop=True)
         positive = positive.sample(frac=1).reset_index(drop=True)
-        l = len(sen_df)
+        l = len(sen_df)//2 - len(negative)
         new_sen = []
         for i in range(l//2):
             idx = i*2
-            sen1 = positive['contents'][idx]
-            sen2 = positive['contents'][idx+1]
+            sen1 = positive['contents'].iloc[idx]
+            sen2 = positive['contents'].iloc[idx+1]
             sen1 = tokenizer.tokenize(sen1)
             sen2 = tokenizer.tokenize(sen2)
             min_len = min(len(sen1), len(sen2))
@@ -42,8 +44,11 @@ class ApolloDataset(Dataset):
             new_sen.append(new2)
         new_label = [1] * len(new_sen)
         insert_df = pd.DataFrame({'contents':new_sen, 'label':new_label})
-        sen_df.append(insert_df, ignore_index=True)
-        return sen_df
+        positive2 = positive[len(new_sen):]
+        positive2 = positive2.reset_index(drop=True)
+        add_df = positive2.append(insert_df, ignore_index=True)
+        add_df = add_df.append(negative, ignore_index=True)
+        return add_df
     
     def cleansing(self, sen):
         sen = re.sub('[^a-z0-9ㄱ-힣]', ' ', sen)
@@ -53,15 +58,18 @@ class ApolloDataset(Dataset):
     def __getitem__(self, idx):
         if self.args.mode=='train':
             sen, label = self.df['contents'][idx], self.df['label'][idx]
-            label = torch.LongTensor(label)
+            label = torch.LongTensor([label])
         else:
             sen = self.df['contents'][idx]
-
-        output = self.tokenizer.encode_plus(sen, max_length=self.args.maxlen)
+            label = torch.LongTensor([-1])
+        output = self.tokenizer.encode_plus(sen, max_length=self.args.maxlen, truncation=True, padding='max_length')
         input_ids, attention_mask = output['input_ids'], output['attention_mask']
         input_ids, attention_mask = torch.LongTensor(input_ids), torch.LongTensor(attention_mask)
 
         return input_ids, attention_mask, label
+
+    def __len__(self):
+        return len(self.df)
 
 
 

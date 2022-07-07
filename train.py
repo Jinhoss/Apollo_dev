@@ -50,11 +50,6 @@ def train(model, args, train_loader, valid_loader):
                                                 num_warmup_steps=0,
                                                 num_training_steps=total_steps)
 
-    seed_val = 42
-    random.seed(seed_val)
-    np.random.seed(seed_val)
-    torch.manual_seed(seed_val)
-    torch.cuda.manual_seed_all(seed_val)
 
     print('start training')
     for epoch in range(args.epochs):
@@ -66,7 +61,8 @@ def train(model, args, train_loader, valid_loader):
             b_input_ids, b_input_mask, b_labels = batch
             outputs = model(b_input_ids,
                             attention_mask=b_input_mask)
-            loss = criterion(outputs, b_labels)
+            y = b_labels.view(-1)
+            loss = criterion(outputs, y)
             train_loss.append(loss.item())
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
@@ -75,7 +71,7 @@ def train(model, args, train_loader, valid_loader):
 
         avg_train_loss = np.mean(train_loss)
         _, avg_val_accuracy = predict(model, args, valid_loader)
-        print("Epoch {0},  Average training loss: {1:.2f} , Validation accuracy : {2:.2f}"\
+        print("Epoch {0},  Average training loss: {1:.4f} , Validation accuracy : {2:.4f}"\
               .format(epoch, avg_train_loss, avg_val_accuracy))
 
         nsml.save(epoch)
