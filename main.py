@@ -11,7 +11,7 @@ import nsml
 from nsml import DATASET_PATH, DATASET_NAME
 import os
 from transformers import BertTokenizer, BertForSequenceClassification, AdamW, BertConfig
-from dataset import ApolloDataset
+from dataset import ApolloDataset, ImbalancedDatasetSampler
 from model import ApolloModel
 import random
 
@@ -85,8 +85,8 @@ if __name__ == '__main__':
         train_dataset = ApolloDataset(args.train_path, args)
         valid_dataset = ApolloDataset(args.valid_path, args)
         print('dataset complete', len(train_dataset))
-        # train_sampler = RandomSampler(train_dataset)
-        # valid_sampler = RandomSampler(valid_dataset)
+        # train_sampler = ImbalancedDatasetSampler(train_dataset)
+        # valid_sampler = ImbalancedDatasetSampler(valid_dataset)
         train_dataLoader = DataLoader(train_dataset, batch_size=args.batch, shuffle=True)
         valid_dataLoader = DataLoader(valid_dataset, batch_size=args.batch, shuffle=True)
         print('dataloader complete')

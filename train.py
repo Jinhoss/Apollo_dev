@@ -70,9 +70,9 @@ def train(model, args, train_loader, valid_loader):
             scheduler.step()
 
         avg_train_loss = np.mean(train_loss)
-        _, avg_val_accuracy = predict(model, args, valid_loader)
-        print("Epoch {0},  Average training loss: {1:.4f} , Validation accuracy : {2:.4f}"\
-              .format(epoch, avg_train_loss, avg_val_accuracy))
-
+        # _, avg_val_accuracy = predict(model, args, valid_loader)
+        # print("Epoch {0},  Average training loss: {1:.4f} , Validation accuracy : {2:.4f}"\
+            #   .format(epoch, avg_train_loss, avg_val_accuracy))
+        print('epoch {0} Average training loss: {1:.4f} complete'.format(epoch, avg_train_loss))
         nsml.save(epoch)
     return model
