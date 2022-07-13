@@ -1,3 +1,22 @@
+
+
+```
+data token describe
+
+count    134000.000000
+mean        682.040463
+std         297.782816
+min          17.000000
+25%         408.000000
+50%         657.000000
+75%         995.000000
+max        1886.000000
+```
+
+
+
+
+
 dev1
 
 ```
@@ -193,3 +212,26 @@ dev 29
 dev15, alpha=0.25, drop=0
 ```
 
+
+
+dev 33 data aug, gamma=2.2
+
+0.9
+
+dev 42 data integration
+
+dev 43 dev33, gamma=2.1
+
+dev44, gamma=2.3
+
+
+
+dev 80 max_len = 288
+
+dev81 max_len = 240
+
+dev86 new data augmentation
+
+dev88 add group parameter
+
+dev 89 max_len 320
