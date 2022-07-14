@@ -235,3 +235,7 @@ dev86 new data augmentation
 dev88 add group parameter
 
 dev 89 max_len 320
+
+dev 107 max 512, no dataaug, imabalanced sampler,
+
+dev 108 107 ++ grad accumul
