@@ -19,7 +19,6 @@ class ApolloModel(nn.Module):
                               dropout=0.1, batch_first=True,
                               bidirectional=True)
         self.pooler = MeanPooling()
-        # self._init_params()
         
     def _init_params(self):
         nn.init.xavier_normal_(self.fc.weight)
@@ -29,12 +28,6 @@ class ApolloModel(nn.Module):
     def forward(self, input_ids, attention_mask):
         output = self.bert_model(input_ids=input_ids, attention_mask=attention_mask)
         output = self.pooler(output.last_hidden_state, attention_mask)
-        # output = output[0][:, 0, :]
-        # output = self.bilstm(output.last_hidden_state)
-        # output = torch.sum(output[0], dim=1)/output[0].size()[1]
-        # logit1 = self.fc(self.dropout1(output))
-        # logit2 = self.fc(self.dropout2(output))
-        # logit3 = self.fc(self.dropout3(output))
         return self.fc(output)
 
 class MeanPooling(nn.Module):
