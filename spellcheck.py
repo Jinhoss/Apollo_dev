@@ -4,6 +4,11 @@ import json
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
 
+'''
+Original Code
+https://github.com/ssut/py-hanspell
+'''
+
 
 def _remove_tags(text):
     text = u'<content>{}</content>'.format(text).replace('<br>','')
